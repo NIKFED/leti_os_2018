@@ -4,7 +4,7 @@ TESTPC SEGMENT
 START:
 	jmp BEGIN
 ;ДАННЫЕ
-AvailableMemory			db		'Amount of available memory: $'
+AvailableMemory			db		'Amоunt of available memory: $'
 STRavailableMemory		db		'?????? B',10,13,'$'
 ExtendedMemory			db		'Size of extended memory: $'
 STRextendedMemory		db		'????? Kb',10,13,'$'
