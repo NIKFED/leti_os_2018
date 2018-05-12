@@ -1,8 +1,12 @@
-EOL 	EQU 	'$'
-CODE	SEGMENT
-        ASSUME CS:CODE, DS:DATA, ES:DATA, SS:AStack
+ISTACK SEGMENT STACK
+	dw 100h dup (?)
+ISTACK ENDS
+
+CODE SEGMENT
+	ASSUME CS:CODE, DS:DATA, ES:DATA, SS:STACK
+START: JMP 	Main
 ;-------------------------------------------------------------------------
-PRINT_A_STR	PROC	NEAR
+PRINT_A_STR	PROC	FAR
 		push	AX
 		mov		AH,09H
 		int		21H
@@ -28,6 +32,12 @@ RoutCode:
 		push 	ES
 		
 		;Проверяем scan-код
+		mov 	AH,2H		; Получение  состояния клавиатуры
+		int 	16H
+		cmp 	AL,2		; Левый Shift нажат
+		jz 		RoutStandart
+		cmp 	AL,1		; Правый Shift нажат
+		jz		RoutStandart
 		in 		AL,60H
 		cmp 	AL, 02H ; клавиша - 1
 		jz 		UserRout_1 
@@ -204,20 +214,10 @@ DELETE:
 		ret
 CheckSignature 	ENDP
 ;-------------------------------------------------------------------------
-DATA	SEGMENT
-	Loaded 			DB 'User interruption is loaded',0DH,0AH,'$'
-	AlreadyLoaded 	DB 'User interruption is already loaded',0DH,0AH,'$'
-	Unloaded 		DB 'User interruption is unloaded',0DH,0AH,'$'
-DATA 	ENDS
-
-AStack	SEGMENT  STACK
-        DW 512 DUP(?)			
-AStack  ENDS
-;-------------------------------------------------------------------------
-Main	PROC  	FAR
+Main:
 		mov 	AX, data
 		mov 	DS, AX
-		mov 	KeepPSP, ES
+		mov 	CS:KeepPSP, ES
 	
 		call 	CheckSignature
 	
@@ -227,6 +227,15 @@ Main	PROC  	FAR
 	
 END_BYTE:
 		ret
-Main    		ENDP
-CODE			ENDS
-				END Main
+CODE ENDS
+
+DATA SEGMENT
+	Loaded DB 'User interruption is already loaded',0DH,0AH,'$'
+	AlreadyLoaded DB 'User interruption is successfully unloaded',0DH,0AH,'$'
+	Unloaded DB 'User interruption is loaded',0DH,0AH,'$'
+DATA ENDS
+
+STACK SEGMENT STACK
+	dw 512 dup (?)
+STACK ENDS
+ END START
